@@ -683,16 +683,363 @@
     .glare { display: none; }
     .reveal-ready .tile { opacity: 1; transform: none; }
   }
+
+  /* ==============================================================
+     Besto card only. Everything below is scoped under the page's
+     own root class, .besto-card-page, which is set on <body> for
+     this page and nowhere else, so none of it can reach the other
+     two cards.
+     ============================================================== */
+
+  /* ---------- background: circuitry, fog, parallax, spotlight ---------- */
+
+  .besto-card-page .bc-circuit {
+    position: absolute; inset: 0;
+    opacity: .16;
+    background-image:
+      linear-gradient(90deg, rgba(56, 160, 255, .55) 1px, transparent 1px),
+      linear-gradient(rgba(56, 160, 255, .35) 1px, transparent 1px);
+    background-size: 220px 220px, 220px 220px;
+    -webkit-mask-image: radial-gradient(120% 90% at 50% 8%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(120% 90% at 50% 8%, #000 0%, transparent 72%);
+  }
+  .besto-card-page .bc-circuit::after {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 220px 220px, rgba(90, 190, 255, .9) 2px, transparent 2.5px),
+      radial-gradient(circle at 440px 660px, rgba(90, 190, 255, .7) 2px, transparent 2.5px),
+      radial-gradient(circle at 880px 220px, rgba(90, 190, 255, .7) 2px, transparent 2.5px);
+    background-size: 1100px 1100px;
+  }
+
+  .besto-card-page .bc-fog {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 60% at 50% 100%, rgba(4, 10, 22, .92) 0%, transparent 70%),
+      linear-gradient(180deg, transparent 55%, rgba(3, 7, 18, .8) 100%);
+  }
+
+  .besto-card-page .bc-par {
+    position: absolute; inset: 0;
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    transition: transform .9s cubic-bezier(.22, .61, .36, 1);
+    will-change: transform;
+  }
+  .besto-card-page .bc-node,
+  .besto-card-page .bc-cube,
+  .besto-card-page .bc-sphere { position: absolute; display: block; }
+
+  .besto-card-page .bc-node {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(120, 200, 255, .75);
+    box-shadow: 0 0 14px 3px rgba(56, 160, 255, .35);
+  }
+  .besto-card-page .bc-cube {
+    width: 96px; height: 96px;
+    border: 1px solid rgba(90, 175, 255, .22);
+    border-radius: 10px;
+    transform: rotate(18deg);
+    animation: bc-drift 26s ease-in-out infinite alternate;
+  }
+  .besto-card-page .bc-cube::before {
+    content: ""; position: absolute; inset: 14px;
+    border: 1px solid rgba(90, 175, 255, .14);
+    border-radius: 6px;
+  }
+  .besto-card-page .bc-cube-b { width: 68px; height: 68px; animation-duration: 34s; }
+  .besto-card-page .bc-sphere {
+    width: 150px; height: 150px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 30%, rgba(190, 225, 255, .30), transparent 46%),
+      radial-gradient(circle at 70% 76%, rgba(28, 120, 220, .24), transparent 58%);
+    border: 1px solid rgba(120, 190, 255, .12);
+    filter: blur(.4px);
+    animation: bc-drift 30s ease-in-out infinite alternate-reverse;
+  }
+  .besto-card-page .bc-sphere-b { width: 104px; height: 104px; animation-duration: 38s; }
+
+  @keyframes bc-drift {
+    from { transform: translate3d(0, -10px, 0) rotate(14deg); }
+    to   { transform: translate3d(0, 14px, 0) rotate(24deg); }
+  }
+
+  /* a soft light that follows the cursor, desktop only */
+  .besto-card-page .bc-spot {
+    position: absolute; inset: 0; opacity: 0;
+    transition: opacity .6s ease;
+    background: radial-gradient(420px 420px at var(--sx, 50%) var(--sy, 30%),
+                rgba(56, 160, 255, .16), transparent 70%);
+  }
+  .besto-card-page.bc-lit .bc-spot { opacity: 1; }
+
+  /* ---------- the white card: material and depth ---------- */
+
+  .besto-card-page .surface-light {
+    background:
+      linear-gradient(196deg, rgba(255, 255, 255, .85) 0%, transparent 42%),
+      linear-gradient(180deg, #ffffff 0%, #f3f6fb 58%, #eaf0f8 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .95) inset,
+      0 0 0 1px rgba(19, 44, 80, .07) inset,
+      0 -18px 40px -28px rgba(19, 44, 80, .35) inset,
+      0 0 0 1px rgba(86, 170, 255, .16),
+      0 42px 90px -44px rgba(0, 0, 0, .78),
+      0 12px 28px -18px rgba(0, 0, 0, .55);
+  }
+  .besto-card-page .surface-light .grain { opacity: .5; }
+
+  /* depth layers, at the values the brief asked for */
+  .besto-card-page .logo-3d   { transform: translateZ(18px); }
+  .besto-card-page .identity  { transform: translateZ(24px); }
+  .besto-card-page .contact   { transform: translateZ(30px); }
+  .besto-card-page .qr-plate  { transform: translateZ(35px); }
+  .besto-card-page .glare     { transform: translateZ(40px); }
+
+  /* if the browser cannot do 3D transforms, nothing above matters and the
+     flat layout still stands */
+  @supports not (transform-style: preserve-3d) {
+    .besto-card-page .logo-3d,
+    .besto-card-page .identity,
+    .besto-card-page .contact,
+    .besto-card-page .qr-plate,
+    .besto-card-page .glare { transform: none; }
+  }
+
+  /* ---------- contact rows as raised bubbles ---------- */
+
+  .besto-card-page .row {
+    transform-style: preserve-3d;
+    transform: translate3d(var(--bx, 0px), var(--by, 0px), var(--bz, 0px)) scale(var(--bs, 1));
+    transition:
+      transform .45s cubic-bezier(.16, 1, .3, 1),
+      box-shadow .45s cubic-bezier(.16, 1, .3, 1),
+      border-color .3s ease;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .95) inset,
+      0 -6px 12px -10px rgba(19, 44, 80, .5) inset,
+      0 6px 14px -8px rgba(19, 44, 80, .28),
+      0 2px 4px -2px rgba(19, 44, 80, .18);
+  }
+  /* a reflection that sweeps across once, rather than parking over the text */
+  .besto-card-page .row::after {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none; opacity: 0;
+    background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .7) 50%, transparent 62%);
+    background-size: 260% 100%; background-position: 130% 0;
+  }
+  @keyframes bc-sweep {
+    from { opacity: .9; background-position: 130% 0; }
+    to   { opacity: 0;  background-position: -30% 0; }
+  }
+  .besto-card-page .row .badge,
+  .besto-card-page .row .chev { transition: transform .45s cubic-bezier(.16, 1, .3, 1); }
+
+  .besto-card-page .row.is-near { --bz: 12px; --bs: 1.015; --by: -2px; }
+
+  .besto-card-page .row:hover,
+  .besto-card-page .row:focus-visible {
+    --bz: 34px; --bs: 1.05; --by: -6px;
+    border-color: rgba(58, 150, 255, .55);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .95) inset,
+      0 -8px 16px -12px rgba(19, 44, 80, .45) inset,
+      0 0 0 3px rgba(58, 150, 255, .14),
+      0 22px 34px -18px rgba(19, 44, 80, .42),
+      0 8px 14px -8px rgba(19, 44, 80, .3);
+  }
+  .besto-card-page .row:hover::after,
+  .besto-card-page .row:focus-visible::after { animation: bc-sweep .72s ease-out both; }
+  .besto-card-page .row:hover .badge,
+  .besto-card-page .row:focus-visible .badge { transform: scale(1.08); }
+  .besto-card-page .row:hover .chev,
+  .besto-card-page .row:focus-visible .chev { transform: translateX(4px); }
+
+  .besto-card-page .row:active {
+    --bz: 6px; --bs: .98; --by: 0px;
+    transition-duration: .09s;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .8) inset,
+      0 4px 8px -6px rgba(19, 44, 80, .3);
+  }
+
+  /* ---------- icon badges with a raised, lit surface ---------- */
+
+  .besto-card-page .badge {
+    position: relative;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .55) inset,
+      0 -3px 6px -3px rgba(0, 0, 0, .45) inset,
+      0 6px 12px -6px rgba(19, 44, 80, .55);
+  }
+  .besto-card-page .badge::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .45), transparent 58%);
+    pointer-events: none;
+  }
+
+  /* ---------- QR plate ---------- */
+
+  .besto-card-page .qr-plate .plate {
+    transition: transform .45s cubic-bezier(.16, 1, .3, 1), box-shadow .45s ease;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, .95) inset,
+      0 0 0 1px rgba(19, 44, 80, .1),
+      0 18px 30px -18px rgba(0, 0, 0, .55);
+  }
+  .besto-card-page .qr-plate .plate:hover { transform: scale(1.04); }
+
+  /* ---------- showcase ---------- */
+
+  .besto-card-page .bc-showcase { margin-top: 30px; }
+  .besto-card-page .bc-showcase h2 {
+    font-family: Archivo, sans-serif; font-weight: 800;
+    font-size: clamp(22px, 4.2vw, 31px); letter-spacing: -.02em;
+    color: #fff; margin: 6px 0 18px;
+  }
+  .besto-card-page .bc-shots {
+    display: grid; grid-template-columns: 1fr; gap: 14px;
+    perspective: 1200px;
+  }
+  .besto-card-page .bc-shot {
+    position: relative; overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid var(--line-dark);
+    background: linear-gradient(180deg, #0d1a30 0%, #081324 100%);
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.16, 1, .3, 1),
+                box-shadow .5s ease, border-color .3s ease;
+    box-shadow: 0 18px 36px -26px rgba(0, 0, 0, .9);
+  }
+  .besto-card-page .bc-shot:hover {
+    transform: translateY(-6px) rotateX(2.2deg) rotateY(-2.2deg);
+    border-color: rgba(58, 150, 255, .45);
+    box-shadow: 0 30px 56px -28px rgba(0, 0, 0, .95),
+                0 0 0 1px rgba(58, 150, 255, .2);
+  }
+  .besto-card-page .bc-shot-art {
+    position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+  }
+  .besto-card-page .bc-shot-art svg {
+    display: block; width: 100%; height: 100%;
+    transition: transform .6s cubic-bezier(.16, 1, .3, 1);
+  }
+  .besto-card-page .bc-shot:hover .bc-shot-art svg { transform: scale(1.06); }
+  .besto-card-page .bc-shot-art::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(5, 12, 26, .1) 0%, rgba(5, 12, 26, .9) 100%);
+  }
+  .besto-card-page .bc-shot-body {
+    position: relative; padding: 14px 16px 18px;
+    display: grid; gap: 6px;
+  }
+  .besto-card-page .bc-shot-icon {
+    display: grid; place-items: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: rgba(58, 150, 255, .12);
+    border: 1px solid rgba(58, 150, 255, .25);
+    color: var(--brand);
+    transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+  }
+  .besto-card-page .bc-shot-icon svg { width: 19px; height: 19px; }
+  .besto-card-page .bc-shot:hover .bc-shot-icon { transform: translateY(-3px); }
+  .besto-card-page .bc-shot h3 {
+    font-family: Archivo, sans-serif; font-weight: 700;
+    font-size: 16px; color: #fff; margin: 2px 0 0;
+  }
+  .besto-card-page .bc-shot p {
+    margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--on-dark-dim);
+  }
+
+  /* ---------- service tiles with depth ---------- */
+
+  .besto-card-page .grid { perspective: 1100px; }
+  .besto-card-page .tile {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .45s cubic-bezier(.16, 1, .3, 1),
+                box-shadow .45s ease, border-color .3s ease;
+  }
+  .besto-card-page .tile::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    pointer-events: none; opacity: 0; transition: opacity .45s ease;
+    background: linear-gradient(160deg, rgba(88, 178, 255, .16) 0%, transparent 52%);
+  }
+  .besto-card-page .tile svg { transition: transform .45s cubic-bezier(.16, 1, .3, 1); }
+  .besto-card-page .tile:hover,
+  .besto-card-page .tile:focus-within {
+    transform: translateY(-8px) scale(1.035) rotateX(2deg) rotateY(-2deg);
+    border-color: rgba(58, 150, 255, .5);
+    box-shadow: 0 26px 46px -26px rgba(0, 0, 0, .95),
+                0 0 0 1px rgba(58, 150, 255, .22);
+  }
+  .besto-card-page .tile:hover::after,
+  .besto-card-page .tile:focus-within::after { opacity: 1; }
+  .besto-card-page .tile:hover svg,
+  .besto-card-page .tile:focus-within svg { transform: translateY(-3px) scale(1.06); }
+
+  /* ---------- breakpoints ---------- */
+
+  @media (min-width: 620px) {
+    .besto-card-page .bc-shots { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  }
+  @media (min-width: 1000px) {
+    .besto-card-page .bc-showcase { margin-top: 40px; }
+    .besto-card-page .bc-shot-body { padding: 16px 18px 20px; }
+  }
+
+  /* touch: no tilt, no proximity, no spotlight — a pressed state instead */
+  @media (hover: none), (pointer: coarse) {
+    .besto-card-page .bc-spot { display: none; }
+    .besto-card-page .row:hover { --bz: 0px; --bs: 1; --by: 0px; }
+    .besto-card-page .row:active { --bz: 4px; --bs: .985; }
+    .besto-card-page .bc-shot:hover,
+    .besto-card-page .tile:hover { transform: none; }
+    .besto-card-page .bc-shot:active { transform: scale(.99); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .besto-card-page .bc-par,
+    .besto-card-page .bc-cube,
+    .besto-card-page .bc-sphere { transform: none !important; animation: none !important; }
+    .besto-card-page .bc-spot { display: none; }
+    .besto-card-page .row.is-near { --bz: 0px; --bs: 1; --by: 0px; }
+    .besto-card-page .row:hover,
+    .besto-card-page .row:focus-visible {
+      --bz: 0px; --bs: 1; --by: 0px;
+      border-color: rgba(58, 150, 255, .7);
+    }
+    .besto-card-page .bc-shot:hover,
+    .besto-card-page .tile:hover,
+    .besto-card-page .tile:focus-within { transform: none; }
+  }
+
 </style>
 
 </head>
-<body>
+<body class="besto-card-page">
 <div class="bg" aria-hidden="true">
   <div class="bg-base"></div>
   <div class="bg-grid"></div>
+  <div class="bc-circuit"></div>
   <div class="orb orb-a"></div>
   <div class="orb orb-b"></div>
   <div class="orb orb-c"></div>
+  <div class="bc-far bc-par" data-depth="6">
+    <span class="bc-node" style="top:14%;left:9%"></span>
+    <span class="bc-node" style="top:62%;left:4%"></span>
+    <span class="bc-node" style="top:31%;left:88%"></span>
+    <span class="bc-node" style="top:77%;left:93%"></span>
+  </div>
+  <div class="bc-mid bc-par" data-depth="14">
+    <span class="bc-cube" style="top:18%;left:6%"></span>
+    <span class="bc-cube bc-cube-b" style="top:68%;left:90%"></span>
+  </div>
+  <div class="bc-near bc-par" data-depth="26">
+    <span class="bc-sphere" style="top:8%;left:80%"></span>
+    <span class="bc-sphere bc-sphere-b" style="top:72%;left:7%"></span>
+  </div>
+  <div class="bc-fog"></div>
+  <div class="bc-spot" id="bc-spot"></div>
 </div>
 
 <main class="page">
@@ -854,6 +1201,328 @@
     </section>
 
     <!-- ================= services ================= -->
+
+    <!-- ================= showcase ================= -->
+    <section class="bc-showcase" aria-labelledby="showcase-title">
+      <p class="eyebrow">WHAT WE LOOK AFTER</p>
+      <h2 id="showcase-title">Three sides of the same job</h2>
+      <div class="bc-shots">
+        <article class="bc-shot">
+          <div class="bc-shot-art"><svg viewBox="0 0 640 360" role="img" aria-label="Illustration of server racks in a data hall, lit blue" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rk-room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#102a4a"/><stop offset="1" stop-color="#040b18"/>
+    </linearGradient>
+    <linearGradient id="rk-face" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1b2f4c"/><stop offset=".55" stop-color="#132440"/><stop offset="1" stop-color="#0c1a2f"/>
+    </linearGradient>
+    <linearGradient id="rk-side" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0a1729"/><stop offset="1" stop-color="#05101f"/>
+    </linearGradient>
+    <linearGradient id="rk-floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1c33"/><stop offset="1" stop-color="#030912"/>
+    </linearGradient>
+    <radialGradient id="rk-haze" cx=".5" cy=".18" r=".7">
+      <stop offset="0" stop-color="#3aa0ff" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#3aa0ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="640" height="360" fill="url(#rk-room)"/>
+  <rect y="236" width="640" height="124" fill="url(#rk-floor)"/>
+  <rect width="640" height="360" fill="url(#rk-haze)"/>
+
+  <g stroke="#3aa0ff" stroke-opacity=".14" fill="none">
+    <path d="M0 262h640M0 292h640M0 328h640"/>
+    <path d="M150 236 90 360M262 236 236 360M378 236 404 360M490 236 550 360"/>
+  </g>
+
+  <g fill="#8ecbff" opacity=".22">
+    <rect x="176" y="24" width="288" height="7" rx="3.5"/>
+    <rect x="212" y="52" width="216" height="5" rx="2.5"/>
+  </g>
+
+  <g opacity=".45">
+    <rect x="236" y="96" width="76" height="140" rx="4" fill="#0d1c31"/>
+    <rect x="328" y="96" width="76" height="140" rx="4" fill="#0d1c31"/>
+    <g fill="#3aa0ff" opacity=".5">
+      <rect x="246" y="110" width="42" height="3" rx="1.5"/>
+      <rect x="246" y="126" width="30" height="3" rx="1.5"/>
+      <rect x="338" y="110" width="48" height="3" rx="1.5"/>
+      <rect x="338" y="142" width="26" height="3" rx="1.5"/>
+    </g>
+  </g>
+
+  <g>
+    <path d="M60 72h132v198H60z" fill="url(#rk-face)"/>
+    <path d="M192 72l30 16v182l-30 0z" fill="url(#rk-side)"/>
+    <rect x="60" y="72" width="132" height="198" rx="3" fill="none" stroke="#3f6ea8" stroke-opacity=".45"/>
+    <g fill="#0b1727" stroke="#31577f" stroke-opacity=".5">
+      <rect x="70" y="86" width="112" height="19" rx="3"/>
+      <rect x="70" y="111" width="112" height="19" rx="3"/>
+      <rect x="70" y="136" width="112" height="19" rx="3"/>
+      <rect x="70" y="161" width="112" height="19" rx="3"/>
+      <rect x="70" y="186" width="112" height="19" rx="3"/>
+      <rect x="70" y="211" width="112" height="19" rx="3"/>
+      <rect x="70" y="236" width="112" height="19" rx="3"/>
+    </g>
+    <g fill="#5dc2ff">
+      <circle cx="80" cy="95.5" r="2.4"/><circle cx="90" cy="95.5" r="2.4" fill="#3ee08a"/>
+      <circle cx="80" cy="120.5" r="2.4" fill="#3ee08a"/><circle cx="90" cy="120.5" r="2.4"/>
+      <circle cx="80" cy="145.5" r="2.4"/><circle cx="90" cy="145.5" r="2.4" fill="#3ee08a"/>
+      <circle cx="80" cy="170.5" r="2.4" fill="#3ee08a"/><circle cx="90" cy="170.5" r="2.4"/>
+      <circle cx="80" cy="195.5" r="2.4"/><circle cx="90" cy="195.5" r="2.4" fill="#3ee08a"/>
+      <circle cx="80" cy="220.5" r="2.4" fill="#3ee08a"/><circle cx="90" cy="220.5" r="2.4"/>
+      <circle cx="80" cy="245.5" r="2.4"/><circle cx="90" cy="245.5" r="2.4" fill="#3ee08a"/>
+    </g>
+    <g fill="#9fd4ff" opacity=".55">
+      <rect x="104" y="93" width="44" height="2.5" rx="1.25"/>
+      <rect x="104" y="118" width="58" height="2.5" rx="1.25"/>
+      <rect x="104" y="143" width="36" height="2.5" rx="1.25"/>
+      <rect x="104" y="168" width="52" height="2.5" rx="1.25"/>
+      <rect x="104" y="193" width="40" height="2.5" rx="1.25"/>
+      <rect x="104" y="218" width="60" height="2.5" rx="1.25"/>
+      <rect x="104" y="243" width="34" height="2.5" rx="1.25"/>
+    </g>
+  </g>
+
+  <g>
+    <path d="M448 84h124v186H448z" fill="url(#rk-face)"/>
+    <path d="M448 84l-26 14v172l26 0z" fill="url(#rk-side)"/>
+    <rect x="448" y="84" width="124" height="186" rx="3" fill="none" stroke="#3f6ea8" stroke-opacity=".45"/>
+    <g fill="#0b1727" stroke="#31577f" stroke-opacity=".5">
+      <rect x="458" y="96" width="104" height="17" rx="3"/>
+      <rect x="458" y="119" width="104" height="17" rx="3"/>
+      <rect x="458" y="142" width="104" height="17" rx="3"/>
+    </g>
+    <g fill="#5dc2ff">
+      <circle cx="468" cy="104.5" r="2.2"/><circle cx="477" cy="104.5" r="2.2" fill="#3ee08a"/>
+      <circle cx="468" cy="127.5" r="2.2" fill="#3ee08a"/><circle cx="477" cy="127.5" r="2.2"/>
+      <circle cx="468" cy="150.5" r="2.2"/><circle cx="477" cy="150.5" r="2.2" fill="#3ee08a"/>
+    </g>
+    <rect x="458" y="168" width="104" height="14" rx="3" fill="#0b1727" stroke="#31577f" stroke-opacity=".5"/>
+    <g fill="#1d3352">
+      <rect x="464" y="172" width="7" height="6" rx="1"/><rect x="475" y="172" width="7" height="6" rx="1"/>
+      <rect x="486" y="172" width="7" height="6" rx="1"/><rect x="497" y="172" width="7" height="6" rx="1"/>
+      <rect x="508" y="172" width="7" height="6" rx="1"/><rect x="519" y="172" width="7" height="6" rx="1"/>
+    </g>
+    <g fill="none" stroke-width="2.4" stroke-linecap="round" opacity=".85">
+      <path d="M467 182c-4 18 -12 26 -6 44" stroke="#3aa0ff"/>
+      <path d="M478 182c-2 20 -16 28 -8 48" stroke="#3ee08a"/>
+      <path d="M489 182c0 22 -14 30 -4 50" stroke="#5dc2ff"/>
+      <path d="M500 182c2 20 10 28 4 46" stroke="#3aa0ff"/>
+      <path d="M511 182c4 18 14 24 8 42" stroke="#7de0ff"/>
+    </g>
+    <rect x="458" y="236" width="104" height="17" rx="3" fill="#0b1727" stroke="#31577f" stroke-opacity=".5"/>
+  </g>
+
+  <ellipse cx="126" cy="272" rx="92" ry="10" fill="#3aa0ff" opacity=".12"/>
+  <ellipse cx="510" cy="272" rx="86" ry="10" fill="#3aa0ff" opacity=".12"/>
+</svg></div>
+          <div class="bc-shot-body">
+            <span class="bc-shot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.4" y="3.6" width="17.2" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3.4" y="14.4" width="17.2" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.8 6.6h.01M6.8 17.4h.01M10.4 6.6h5M10.4 17.4h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Infrastructure &amp; Networking</h3>
+            <p>Racks, switching and cabling built to stay up, and watched so they do.</p>
+          </div>
+        </article>
+        <article class="bc-shot">
+          <div class="bc-shot-art"><svg viewBox="0 0 640 360" role="img" aria-label="Illustration of a security camera covering a building entrance at night" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cc-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e2745"/><stop offset="1" stop-color="#040b18"/>
+    </linearGradient>
+    <linearGradient id="cc-wall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16294a"/><stop offset="1" stop-color="#0a1729"/>
+    </linearGradient>
+    <linearGradient id="cc-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a3f61"/><stop offset=".5" stop-color="#1a2b47"/><stop offset="1" stop-color="#0e1a2e"/>
+    </linearGradient>
+    <linearGradient id="cc-beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3aa0ff" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#3aa0ff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="cc-lens" cx=".36" cy=".32" r=".75">
+      <stop offset="0" stop-color="#9fd8ff"/><stop offset=".45" stop-color="#1c5fa8"/><stop offset="1" stop-color="#050d18"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="640" height="360" fill="url(#cc-sky)"/>
+
+  <!-- building behind -->
+  <g fill="url(#cc-wall)">
+    <rect x="352" y="60" width="288" height="300"/>
+    <rect x="248" y="150" width="112" height="210"/>
+  </g>
+  <g fill="#3aa0ff" opacity=".22">
+    <rect x="378" y="88" width="34" height="22" rx="2"/>
+    <rect x="428" y="88" width="34" height="22" rx="2"/>
+    <rect x="478" y="88" width="34" height="22" rx="2"/>
+    <rect x="378" y="132" width="34" height="22" rx="2"/>
+    <rect x="478" y="132" width="34" height="22" rx="2"/>
+    <rect x="428" y="176" width="34" height="22" rx="2"/>
+    <rect x="272" y="178" width="28" height="20" rx="2"/>
+    <rect x="312" y="178" width="28" height="20" rx="2"/>
+    <rect x="272" y="220" width="28" height="20" rx="2"/>
+  </g>
+  <g fill="#7dc4ff" opacity=".5">
+    <rect x="428" y="88" width="34" height="22" rx="2"/>
+    <rect x="378" y="132" width="34" height="22" rx="2"/>
+    <rect x="312" y="220" width="28" height="20" rx="2"/>
+  </g>
+
+  <!-- ground -->
+  <rect y="300" width="640" height="60" fill="#050e1c"/>
+  <path d="M0 300h640" stroke="#3aa0ff" stroke-opacity=".2"/>
+
+  <!-- coverage beam -->
+  <path d="M148 128 L470 256 L470 300 L118 300 Z" fill="url(#cc-beam)"/>
+  <g stroke="#3aa0ff" stroke-opacity=".28" fill="none">
+    <path d="M148 128 470 256"/>
+    <path d="M148 128 176 300"/>
+  </g>
+
+  <!-- entrance doors inside the beam -->
+  <g>
+    <rect x="252" y="244" width="76" height="56" rx="3" fill="#0a1626" stroke="#3aa0ff" stroke-opacity=".35"/>
+    <path d="M290 244v56" stroke="#3aa0ff" stroke-opacity=".28"/>
+  </g>
+
+  <!-- mounting bracket and camera -->
+  <g>
+    <rect x="58" y="54" width="14" height="86" rx="4" fill="#16263e"/>
+    <rect x="44" y="44" width="42" height="14" rx="5" fill="#1d3152"/>
+    <path d="M68 112h34" stroke="#26405f" stroke-width="7" stroke-linecap="round"/>
+    <g>
+      <rect x="96" y="92" width="96" height="40" rx="14" fill="url(#cc-body)" stroke="#3f6ea8" stroke-opacity=".5"/>
+      <rect x="104" y="98" width="72" height="8" rx="4" fill="#ffffff" opacity=".07"/>
+      <rect x="182" y="102" width="14" height="20" rx="4" fill="#111f34"/>
+      <circle cx="150" cy="112" r="3" fill="#ff5a5a" opacity=".9"/>
+      <!-- sun shield -->
+      <path d="M94 88h104a8 8 0 0 1 8 8v3H86v-3a8 8 0 0 1 8-8z" fill="#22385a"/>
+    </g>
+    <!-- lens -->
+    <g>
+      <circle cx="104" cy="112" r="21" fill="#0a1424" stroke="#3f6ea8" stroke-opacity=".6"/>
+      <circle cx="104" cy="112" r="15" fill="url(#cc-lens)"/>
+      <circle cx="98" cy="106" r="4.5" fill="#dff0ff" opacity=".55"/>
+    </g>
+  </g>
+
+  <!-- status pulse -->
+  <g fill="none" stroke="#3ee08a" stroke-opacity=".5">
+    <circle cx="150" cy="112" r="8"/>
+    <circle cx="150" cy="112" r="14" stroke-opacity=".22"/>
+  </g>
+</svg></div>
+          <div class="bc-shot-body">
+            <span class="bc-shot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 8.1 17.4 4.4l1.6 5.4L4.8 13.5 3.2 8.1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 9.8 21.6 8.6M7.8 13.1v3.6a3.2 3.2 0 1 1-6.4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13.4" cy="8.3" r="1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Security &amp; Surveillance</h3>
+            <p>Cameras and access control, installed properly and kept recording.</p>
+          </div>
+        </article>
+        <article class="bc-shot">
+          <div class="bc-shot-art"><svg viewBox="0 0 640 360" role="img" aria-label="Illustration of a code editor and a website layout on screen" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cd-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e2745"/><stop offset="1" stop-color="#040b18"/>
+    </linearGradient>
+    <linearGradient id="cd-win" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#132441"/><stop offset="1" stop-color="#0a1729"/>
+    </linearGradient>
+    <linearGradient id="cd-glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".10"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="cd-glow" cx=".5" cy=".4" r=".6">
+      <stop offset="0" stop-color="#3aa0ff" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#3aa0ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="640" height="360" fill="url(#cd-bg)"/>
+  <rect width="640" height="360" fill="url(#cd-glow)"/>
+
+  <!-- back window: browser preview -->
+  <g transform="translate(300 42)">
+    <rect width="300" height="200" rx="12" fill="url(#cd-win)" stroke="#3f6ea8" stroke-opacity=".45"/>
+    <rect width="300" height="28" rx="12" fill="#16294a"/>
+    <rect y="16" width="300" height="12" fill="#16294a"/>
+    <g fill="#3f6ea8" opacity=".8">
+      <circle cx="16" cy="14" r="4"/><circle cx="30" cy="14" r="4"/><circle cx="44" cy="14" r="4"/>
+    </g>
+    <rect x="62" y="8" width="180" height="12" rx="6" fill="#0c1a2f"/>
+    <!-- hero block -->
+    <rect x="18" y="44" width="150" height="14" rx="4" fill="#9fd4ff" opacity=".8"/>
+    <rect x="18" y="66" width="112" height="9" rx="4" fill="#5b7ea8" opacity=".7"/>
+    <rect x="18" y="82" width="132" height="9" rx="4" fill="#5b7ea8" opacity=".5"/>
+    <rect x="18" y="104" width="72" height="24" rx="12" fill="#3aa0ff" opacity=".85"/>
+    <rect x="196" y="44" width="86" height="84" rx="8" fill="#0d1d33" stroke="#3aa0ff" stroke-opacity=".3"/>
+    <g fill="#3aa0ff" opacity=".45">
+      <rect x="206" y="56" width="66" height="6" rx="3"/>
+      <rect x="206" y="70" width="46" height="6" rx="3"/>
+      <rect x="206" y="84" width="56" height="6" rx="3"/>
+    </g>
+    <!-- cards row -->
+    <g fill="#0d1d33" stroke="#31577f" stroke-opacity=".5">
+      <rect x="18" y="146" width="80" height="38" rx="6"/>
+      <rect x="110" y="146" width="80" height="38" rx="6"/>
+      <rect x="202" y="146" width="80" height="38" rx="6"/>
+    </g>
+    <g fill="#5b7ea8" opacity=".7">
+      <rect x="28" y="156" width="42" height="6" rx="3"/><rect x="28" y="168" width="58" height="5" rx="2.5"/>
+      <rect x="120" y="156" width="46" height="6" rx="3"/><rect x="120" y="168" width="52" height="5" rx="2.5"/>
+      <rect x="212" y="156" width="38" height="6" rx="3"/><rect x="212" y="168" width="56" height="5" rx="2.5"/>
+    </g>
+    <rect width="300" height="200" rx="12" fill="url(#cd-glass)"/>
+  </g>
+
+  <!-- front window: editor -->
+  <g transform="translate(48 116)">
+    <rect width="322" height="206" rx="12" fill="url(#cd-win)" stroke="#3f6ea8" stroke-opacity=".55"/>
+    <rect width="322" height="28" rx="12" fill="#16294a"/>
+    <rect y="16" width="322" height="12" fill="#16294a"/>
+    <g fill="#3f6ea8" opacity=".8">
+      <circle cx="16" cy="14" r="4"/><circle cx="30" cy="14" r="4"/><circle cx="44" cy="14" r="4"/>
+    </g>
+    <rect x="62" y="8" width="88" height="12" rx="4" fill="#0c1a2f"/>
+    <!-- gutter -->
+    <rect x="0" y="28" width="30" height="178" fill="#0c1a2f"/>
+    <g fill="#3f6ea8" opacity=".6">
+      <rect x="11" y="44" width="8" height="4" rx="2"/><rect x="11" y="62" width="8" height="4" rx="2"/>
+      <rect x="11" y="80" width="8" height="4" rx="2"/><rect x="11" y="98" width="8" height="4" rx="2"/>
+      <rect x="11" y="116" width="8" height="4" rx="2"/><rect x="11" y="134" width="8" height="4" rx="2"/>
+      <rect x="11" y="152" width="8" height="4" rx="2"/><rect x="11" y="170" width="8" height="4" rx="2"/>
+    </g>
+    <!-- code lines -->
+    <g>
+      <rect x="44" y="42" width="52" height="7" rx="3.5" fill="#7de0ff"/>
+      <rect x="104" y="42" width="84" height="7" rx="3.5" fill="#9fd4ff" opacity=".65"/>
+      <rect x="58" y="60" width="40" height="7" rx="3.5" fill="#3ee08a"/>
+      <rect x="106" y="60" width="118" height="7" rx="3.5" fill="#5b7ea8" opacity=".75"/>
+      <rect x="58" y="78" width="66" height="7" rx="3.5" fill="#ffc46b" opacity=".8"/>
+      <rect x="132" y="78" width="56" height="7" rx="3.5" fill="#5b7ea8" opacity=".6"/>
+      <rect x="72" y="96" width="94" height="7" rx="3.5" fill="#9fd4ff" opacity=".55"/>
+      <rect x="72" y="114" width="58" height="7" rx="3.5" fill="#3ee08a" opacity=".8"/>
+      <rect x="138" y="114" width="74" height="7" rx="3.5" fill="#5b7ea8" opacity=".6"/>
+      <rect x="58" y="132" width="44" height="7" rx="3.5" fill="#7de0ff" opacity=".8"/>
+      <rect x="44" y="150" width="30" height="7" rx="3.5" fill="#9fd4ff" opacity=".5"/>
+      <rect x="44" y="168" width="78" height="7" rx="3.5" fill="#5b7ea8" opacity=".5"/>
+      <rect x="128" y="168" width="7" height="9" rx="1.5" fill="#3aa0ff"/>
+    </g>
+    <rect width="322" height="206" rx="12" fill="url(#cd-glass)"/>
+  </g>
+
+  <ellipse cx="220" cy="332" rx="150" ry="12" fill="#3aa0ff" opacity=".1"/>
+</svg></div>
+          <div class="bc-shot-body">
+            <span class="bc-shot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.4 8.6-4 3.4 4 3.4m7.2-6.8 4 3.4-4 3.4M13.8 5.2l-3.6 13.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Software &amp; Digital Solutions</h3>
+            <p>The sites and tools your business runs on, maintained and extended.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="services" aria-labelledby="services-title">
       <div class="services-head">
         <p class="eyebrow">Our Services</p>
@@ -995,11 +1664,29 @@
 
   // ---------- tilt ----------
   var tilt = document.getElementById("tilt");
-  var MAX = 9; // degrees — inside the 8-12 the design calls for
+  var MAX = 7; // degrees
   function setTilt(rx, ry) {
     tilt.style.setProperty("--rx", rx.toFixed(2) + "deg");
     tilt.style.setProperty("--ry", ry.toFixed(2) + "deg");
   }
+  // the card eases towards the pointer rather than snapping to it
+  var tiltTarget = { rx: 0, ry: 0 };
+  var tiltNow = { rx: 0, ry: 0 };
+  var easing = null;
+  function ease() {
+    tiltNow.rx += (tiltTarget.rx - tiltNow.rx) * 0.12;
+    tiltNow.ry += (tiltTarget.ry - tiltNow.ry) * 0.12;
+    setTilt(tiltNow.rx, tiltNow.ry);
+    if (Math.abs(tiltTarget.rx - tiltNow.rx) > 0.02 ||
+        Math.abs(tiltTarget.ry - tiltNow.ry) > 0.02) {
+      easing = requestAnimationFrame(ease);
+    } else {
+      setTilt(tiltTarget.rx, tiltTarget.ry);
+      easing = null;
+    }
+  }
+  function startEase() { if (!easing) easing = requestAnimationFrame(ease); }
+
   if (!reduceMotion) {
     var fine = false;
     try { fine = matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) {}
@@ -1015,12 +1702,15 @@
           tilt.classList.add("is-live");
           tilt.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
           tilt.style.setProperty("--my", (py * 100).toFixed(1) + "%");
-          setTilt(-(py - 0.5) * 2 * MAX, (px - 0.5) * 2 * MAX);
+          tiltTarget.rx = -(py - 0.5) * 2 * MAX;
+          tiltTarget.ry = (px - 0.5) * 2 * MAX;
+          startEase();
         });
       });
       tilt.addEventListener("pointerleave", function () {
         tilt.classList.remove("is-live");
-        setTilt(0, 0);
+        tiltTarget.rx = 0; tiltTarget.ry = 0;
+        startEase();
       });
     } else {
       // touch: lean with scroll position, so the tilt never fights a swipe
@@ -1150,6 +1840,84 @@
   addEventListener("resize", syncBar, { passive: true });
   syncBar();
 })();
+</script>
+
+<script>
+// ============================================================
+// Besto card only. Guarded by the page's own root class, so this
+// script does nothing if it ever lands on another page.
+// ============================================================
+(function () {
+  "use strict";
+  var root = document.body;
+  if (!root || !root.classList.contains("besto-card-page")) return;
+
+  var reduce = false;
+  try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  var fine = false;
+  try { fine = matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) {}
+  if (reduce || !fine) return;
+
+  var layers = [].slice.call(document.querySelectorAll(".bc-par"));
+  var spot = document.getElementById("bc-spot");
+  var rows = [].slice.call(document.querySelectorAll(".contact .row"));
+
+  var mx = 0, my = 0, have = false, queued = false, paused = false;
+
+  function onMove(e) {
+    mx = e.clientX; my = e.clientY; have = true;
+    if (!queued && !paused) { queued = true; requestAnimationFrame(apply); }
+  }
+
+  function apply() {
+    queued = false;
+    if (!have || paused) return;
+
+    // parallax: each layer drifts by its own depth, away from the cursor
+    var cx = (mx / innerWidth) - 0.5;
+    var cy = (my / innerHeight) - 0.5;
+    for (var i = 0; i < layers.length; i++) {
+      var d = parseFloat(layers[i].getAttribute("data-depth")) || 0;
+      layers[i].style.setProperty("--px", (-cx * d).toFixed(1) + "px");
+      layers[i].style.setProperty("--py", (-cy * d).toFixed(1) + "px");
+    }
+
+    // cursor light
+    if (spot) {
+      spot.style.setProperty("--sx", mx.toFixed(0) + "px");
+      spot.style.setProperty("--sy", my.toFixed(0) + "px");
+      root.classList.add("bc-lit");
+    }
+
+    // proximity: lift only the nearest contact bubble, and only when the
+    // cursor is close enough to be heading for it
+    var best = null, bestD = 150;
+    for (var j = 0; j < rows.length; j++) {
+      var r = rows[j].getBoundingClientRect();
+      if (r.bottom < -80 || r.top > innerHeight + 80) continue;
+      var dx = Math.max(r.left - mx, 0, mx - r.right);
+      var dy = Math.max(r.top - my, 0, my - r.bottom);
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < bestD) { bestD = dist; best = rows[j]; }
+    }
+    for (var k = 0; k < rows.length; k++) {
+      rows[k].classList.toggle("is-near", rows[k] === best && bestD > 0);
+    }
+  }
+
+  addEventListener("pointermove", onMove, { passive: true });
+  addEventListener("pointerleave", function () {
+    root.classList.remove("bc-lit");
+    for (var k = 0; k < rows.length; k++) rows[k].classList.remove("is-near");
+  }, { passive: true });
+
+  // stop doing any of this while the tab is in the background
+  document.addEventListener("visibilitychange", function () {
+    paused = document.hidden;
+    if (paused) root.classList.remove("bc-lit");
+  });
+})();
+
 </script>
 </body>
 </html>
