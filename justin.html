@@ -91,6 +91,41 @@
     text-transform: uppercase;
   }
 
+  /* ---------- 3D tilt ----------
+     Each panel sits in its own perspective scene so the two don't share a
+     vanishing point. A pointer tilts the panel it is over; on touch the
+     panels lean gently with scroll instead, so nothing fights the finger. */
+
+  .scene { perspective: 1400px; }
+  .tilt {
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .45s cubic-bezier(.22, .61, .36, 1);
+    will-change: transform;
+  }
+  .tilt.is-live { transition: transform .1s linear; }
+
+  /* light travelling across the panel, as if it were catching a reflection */
+  .sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .35s ease;
+    background: radial-gradient(
+      460px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, .65),
+      rgba(255, 255, 255, 0) 62%
+    );
+  }
+  .services .sheen {
+    background: radial-gradient(
+      460px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(90, 170, 255, .20),
+      rgba(90, 170, 255, 0) 62%
+    );
+  }
+  .tilt.is-live .sheen { opacity: 1; }
+
   /* ---------- Panel 1: identity + contact ---------- */
 
   .card {
@@ -248,6 +283,8 @@
   /* ---------- Panel 2: services ---------- */
 
   .services {
+    position: relative;
+    overflow: hidden;
     margin-top: 16px;
     background: linear-gradient(170deg, var(--navy-panel) 0%, #071120 60%, #060d1c 100%);
     border: 1px solid var(--navy-hair);
@@ -512,6 +549,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
+    .tilt { transform: none !important; }
+    .sheen { display: none; }
   }
 </style>
 
@@ -520,7 +559,7 @@
 <div class="wrap">
 
   <!-- ===================== identity + contact ===================== -->
-  <section class="card">
+  <div class="scene"><section class="card tilt">
     <div class="card-inner">
 
       <div class="identity">
@@ -626,10 +665,11 @@
       </div>
 
     </div>
-  </section>
+    <div class="sheen"></div>
+  </section></div>
 
   <!-- ===================== services ===================== -->
-  <section class="services">
+  <div class="scene"><section class="services tilt">
     <div class="services-head">
       <div class="label">Our Services</div>
       <h2>Complete IT Solutions<br>for a <span>Smarter Tomorrow</span></h2>
@@ -662,7 +702,8 @@
         <span class="act-copy"><span>Save Contact</span><small>Add to your phone</small></span>
       </button>
     </div>
-  </section>
+    <div class="sheen"></div>
+  </section></div>
 
   <footer class="foot">
     <div class="foot-brand">
@@ -768,6 +809,75 @@
       ta.remove();
       return ok;
     }
+
+    // --- 3D tilt -------------------------------------------------------
+    (function tilt() {
+      var reduce = false;
+      try {
+        reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (err) { reduce = false; }
+      if (reduce) return;
+
+      var panels = document.querySelectorAll('.tilt');
+      var fine = false;
+      try { fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches; }
+      catch (err) { fine = false; }
+
+      function set(el, rx, ry) {
+        el.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+        el.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+      }
+
+      if (fine) {
+        // a mouse tilts whichever panel it is over, and drags the sheen with it
+        var MAX = 6;
+        Array.prototype.forEach.call(panels, function (el) {
+          var frame = null;
+          el.addEventListener('pointermove', function (e) {
+            if (frame) return;
+            frame = requestAnimationFrame(function () {
+              frame = null;
+              var r = el.getBoundingClientRect();
+              var px = (e.clientX - r.left) / r.width;
+              var py = (e.clientY - r.top) / r.height;
+              el.classList.add('is-live');
+              el.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+              el.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+              set(el, -(py - 0.5) * 2 * MAX, (px - 0.5) * 2 * MAX);
+            });
+          });
+          el.addEventListener('pointerleave', function () {
+            el.classList.remove('is-live');
+            set(el, 0, 0);
+          });
+        });
+        return;
+      }
+
+      // touch: lean with scroll position, so the panels have depth without
+      // ever intercepting a swipe
+      var MAX_SCROLL = 3.2;
+      var queued = false;
+      function onScroll() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () {
+          queued = false;
+          var mid = window.innerHeight / 2;
+          Array.prototype.forEach.call(panels, function (el) {
+            var r = el.getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight) return;
+            var offset = (r.top + r.height / 2 - mid) / window.innerHeight;
+            if (offset > 1) offset = 1;
+            if (offset < -1) offset = -1;
+            set(el, -offset * MAX_SCROLL, 0);
+          });
+        });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      onScroll();
+    })();
 
     function copyText(text) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
