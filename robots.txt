@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://itsmyit08-ui.github.io/sitemap.xml
