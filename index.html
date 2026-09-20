@@ -1083,8 +1083,10 @@
 
   Array.prototype.forEach.call(document.querySelectorAll("[data-save]"), function (b) {
     b.addEventListener("click", function () {
-      if (canDownload) downloadVcf();
-      openSheet();
+      // a real download is the whole job; the sheet is only for the
+      // places that block one (an embedded frame, mostly)
+      if (canDownload) { downloadVcf(); toast("Contact file saved"); }
+      else openSheet();
     });
   });
   document.getElementById("close-sheet").addEventListener("click", closeSheet);
