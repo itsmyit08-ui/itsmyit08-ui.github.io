@@ -635,6 +635,13 @@
     body.has-bar { padding-bottom: 74px; }
   }
 
+  /* small phones: tighten the rows so a full phone number still fits */
+  @media (max-width: 370px) {
+    .row { grid-template-columns: 40px minmax(0, 1fr) 16px; gap: 10px; padding: 8px 12px 8px 7px; }
+    .row-main { font-size: 14.5px; }
+    .badge { width: 40px; height: 40px; }
+  }
+
   @media (min-width: 720px) {
     .shell { padding-block: 40px 44px; }
     .face-inner { padding: 34px 32px 22px; }
