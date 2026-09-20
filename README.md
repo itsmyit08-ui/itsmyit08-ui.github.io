@@ -23,7 +23,6 @@ share sheet, falling back to copying the link.
 | `*.vcf` | Each contact as a vCard, also generated in-page |
 | `og.png`, `justin-og.png`, `akhil-og.png` | Link preview images for WhatsApp, LinkedIn and messaging apps |
 | `favicon.png` | Browser tab icon |
-| `justin/index.html` | Redirect to `/justin.html`, kept so an older link still works |
 | `.nojekyll` | Publish the files as they are, with no Jekyll pass |
 
 No framework, no build step at serve time, no dependencies. Fonts come from
