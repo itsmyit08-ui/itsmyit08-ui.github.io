@@ -1014,6 +1014,28 @@
     .besto-card-page .tile:focus-within { transform: none; }
   }
 
+  /* ---------- data flowing behind the services ---------- */
+
+  .besto-card-page .services { position: relative; }
+  .besto-card-page .bc-flow {
+    position: absolute; inset: -28px -16px -20px;
+    z-index: 0; pointer-events: none; overflow: hidden;
+    border-radius: 24px;
+    /* fade at every edge so the field has no visible boundary */
+    -webkit-mask-image:
+      linear-gradient(180deg, transparent 0, #000 12%, #000 86%, transparent 100%),
+      linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(180deg, transparent 0, #000 12%, #000 86%, transparent 100%),
+      linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+    mask-composite: intersect;
+  }
+  .besto-card-page .bc-flow canvas { display: block; }
+  /* the content sits in front of the field */
+  .besto-card-page .services-head,
+  .besto-card-page .grid { position: relative; z-index: 1; }
+
 </style>
 
 </head>
@@ -1532,6 +1554,7 @@
     </section>
 
     <section class="services" aria-labelledby="services-title">
+      <div class="bc-flow" aria-hidden="true"><canvas id="bc-flow"></canvas></div>
       <div class="services-head">
         <p class="eyebrow">Our Services</p>
         <h2 id="services-title">Complete IT Solutions for a <span>Smarter Tomorrow</span></h2>
@@ -1924,6 +1947,232 @@
     paused = document.hidden;
     if (paused) root.classList.remove("bc-lit");
   });
+})();
+
+// ============================================================
+// Besto card only: a field of data moving between nodes, drawn
+// behind the services section. Canvas, because it is dozens of
+// moving points; CSS would thrash layout.
+// ============================================================
+(function () {
+  "use strict";
+  var root = document.body;
+  if (!root || !root.classList.contains("besto-card-page")) return;
+
+  var canvas = document.getElementById("bc-flow");
+  var section = document.querySelector(".services");
+  var box = canvas && canvas.parentNode;   // .bc-flow, which bleeds past the section
+  if (!canvas || !section || !box || !canvas.getContext) return;
+
+  var ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) return;
+
+  var reduce = false;
+  try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  var coarse = false;
+  try { coarse = matchMedia("(pointer: coarse)").matches; } catch (e) {}
+
+  var W = 0, H = 0, dpr = 1;
+  var nodes = [], links = [], packets = [];
+  var angle = 0, raf = null, last = 0;
+  var onScreen = true, hidden = false;
+
+  // the field lives in a box: x and y across the section, z towards the viewer
+  var FOCAL = 2.4;
+
+  function build() {
+    var count = Math.round(Math.min(46, Math.max(14, (W * H) / 24000)));
+    if (coarse) count = Math.round(count * 0.6);
+    nodes = [];
+    for (var i = 0; i < count; i++) {
+      nodes.push({
+        x: (Math.random() * 2 - 1) * 1.12,
+        y: (Math.random() * 2 - 1) * 0.62,
+        z: (Math.random() * 2 - 1),
+        // each node breathes a little, on its own phase
+        p: Math.random() * Math.PI * 2,
+        a: 0.012 + Math.random() * 0.02
+      });
+    }
+
+    // join each node to its nearest few neighbours, once per pair
+    links = [];
+    for (var j = 0; j < nodes.length; j++) {
+      var near = [];
+      for (var k = 0; k < nodes.length; k++) {
+        if (k === j) continue;
+        var dx = nodes[j].x - nodes[k].x;
+        var dy = nodes[j].y - nodes[k].y;
+        var dz = nodes[j].z - nodes[k].z;
+        near.push({ k: k, d: dx * dx + dy * dy + dz * dz });
+      }
+      near.sort(function (m, n) { return m.d - n.d; });
+      for (var t = 0; t < 2 && t < near.length; t++) {
+        var b = near[t].k;
+        if (b > j) links.push([j, b]);
+      }
+    }
+
+    var want = Math.round(Math.min(26, links.length * 0.6));
+    packets = [];
+    for (var q = 0; q < want; q++) packets.push(spawn());
+  }
+
+  function spawn() {
+    return {
+      l: (Math.random() * links.length) | 0,
+      t: Math.random(),
+      v: 0.10 + Math.random() * 0.22,   // progress per second
+      back: Math.random() < 0.5
+    };
+  }
+
+  function project(n) {
+    var ca = Math.cos(angle), sa = Math.sin(angle);
+    var x = n.x * ca - n.z * sa;
+    var z = n.x * sa + n.z * ca;
+    var s = FOCAL / (FOCAL + z);
+    return {
+      x: W / 2 + x * s * W * 0.46,
+      y: H / 2 + n.y * s * H * 0.46,
+      s: s
+    };
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    var pts = new Array(nodes.length);
+    for (var i = 0; i < nodes.length; i++) pts[i] = project(nodes[i]);
+
+    // links first, dimmed by depth so the far side recedes
+    ctx.lineWidth = 1;
+    for (var j = 0; j < links.length; j++) {
+      var a = pts[links[j][0]], b = pts[links[j][1]];
+      var depth = (a.s + b.s) / 2;
+      var alpha = Math.max(0, (depth - 0.55)) * 0.34;
+      if (alpha <= 0.004) continue;
+      ctx.strokeStyle = "rgba(58, 150, 255, " + alpha.toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    // nodes
+    for (var k = 0; k < pts.length; k++) {
+      var p = pts[k];
+      var al = Math.max(0, (p.s - 0.5)) * 0.85;
+      if (al <= 0.01) continue;
+      ctx.fillStyle = "rgba(125, 196, 255, " + Math.min(0.75, al).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.7, 1.7 * p.s), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // the data itself, travelling along the links
+    for (var q = 0; q < packets.length; q++) {
+      var pk = packets[q];
+      var link = links[pk.l];
+      if (!link) continue;
+      var from = pts[link[pk.back ? 1 : 0]];
+      var to = pts[link[pk.back ? 0 : 1]];
+      var t = pk.t;
+      var x = from.x + (to.x - from.x) * t;
+      var y = from.y + (to.y - from.y) * t;
+      var s = from.s + (to.s - from.s) * t;
+      var al = Math.max(0, (s - 0.5)) * 1.5;
+      if (al <= 0.02) continue;
+
+      // a short trail behind it reads as direction
+      var tt = Math.max(0, t - 0.16);
+      var tx = from.x + (to.x - from.x) * tt;
+      var ty = from.y + (to.y - from.y) * tt;
+      var grad = ctx.createLinearGradient(tx, ty, x, y);
+      grad.addColorStop(0, "rgba(125, 220, 255, 0)");
+      grad.addColorStop(1, "rgba(159, 232, 255, " + Math.min(0.55, al * 0.55).toFixed(3) + ")");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(0.8, 1.6 * s);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(190, 240, 255, " + Math.min(0.9, al).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1, 2.1 * s), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function step(now) {
+    raf = null;
+    var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
+    last = now;
+
+    angle += dt * 0.055;           // one slow turn, about two minutes
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      n.p += dt * 0.6;
+      n.y += Math.sin(n.p) * n.a * dt;
+    }
+    for (var q = 0; q < packets.length; q++) {
+      var pk = packets[q];
+      pk.t += pk.v * dt;
+      if (pk.t >= 1) packets[q] = spawn();
+    }
+
+    draw();
+    schedule();
+  }
+
+  function schedule() {
+    if (raf || reduce || !onScreen || hidden) return;
+    raf = requestAnimationFrame(step);
+  }
+
+  function stop() {
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    last = 0;
+  }
+
+  function resize() {
+    var r = box.getBoundingClientRect();
+    var w = Math.round(r.width), h = Math.round(r.height);
+    if (!w || !h) return;
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = w; H = h;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+    draw();
+  }
+
+  resize();
+
+  if (typeof ResizeObserver === "function") {
+    var ro = new ResizeObserver(function () { resize(); });
+    ro.observe(box);
+  } else {
+    addEventListener("resize", resize, { passive: true });
+  }
+
+  // nothing runs while the section is off screen or the tab is hidden
+  if (typeof IntersectionObserver === "function") {
+    new IntersectionObserver(function (entries) {
+      onScreen = entries[0].isIntersecting;
+      if (onScreen) schedule(); else stop();
+    }, { rootMargin: "120px" }).observe(section);
+  }
+  document.addEventListener("visibilitychange", function () {
+    hidden = document.hidden;
+    if (hidden) stop(); else schedule();
+  });
+
+  schedule();
 })();
 
 </script>
